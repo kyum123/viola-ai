@@ -1,0 +1,16 @@
+# 비올라(Viola) 백엔드 의존성
+# pip install -r requirements.txt
+
+# 웹 서버
+fastapi>=0.111.0
+uvicorn[standard]>=0.29.0
+
+# 환경 변수
+python-dotenv>=1.0.0
+
+# DB (PostgreSQL + PostGIS)
+sqlalchemy>=2.0.30
+psycopg2-binary>=2.9.9
+
+# pipeline 모듈 의존성 (공유)
+requests>=2.31.0
