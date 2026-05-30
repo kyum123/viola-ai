@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { fetchPriorityList, fetchRainScore } from "./api/viola";
+import AppPreview from "./components/AppPreview";
 import DrainDashboard from "./components/DrainDashboard";
 import InfoPanel from "./components/InfoPanel";
 import PriorityList from "./components/PriorityList";
@@ -11,6 +12,7 @@ const DEFAULT_SIGUNGU = import.meta.env.VITE_DEFAULT_SIGUNGU ?? "11620";
 const TABS = [
   { key: "visit", label: "🏠 방문 우선순위" },
   { key: "drain", label: "🌀 빗물받이 점검" },
+  { key: "app", label: "📱 앱 미리보기" },
 ];
 
 function computeStats(items, rainfallMm) {
@@ -135,6 +137,8 @@ export default function App() {
         {tab === "drain" && (
           <DrainDashboard sigunguCode={DEFAULT_SIGUNGU} />
         )}
+
+        {tab === "app" && <AppPreview />}
       </main>
 
       <footer className="border-t bg-white px-6 py-4 text-center text-xs text-gray-400">
