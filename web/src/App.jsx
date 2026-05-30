@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { fetchPriorityList } from "./api/viola";
+import { fetchPriorityList, fetchRainScore } from "./api/viola";
 import DrainDashboard from "./components/DrainDashboard";
 import InfoPanel from "./components/InfoPanel";
 import PriorityList from "./components/PriorityList";
@@ -13,31 +13,32 @@ const TABS = [
   { key: "drain", label: "🌀 빗물받이 점검" },
 ];
 
-function computeStats(items) {
+function computeStats(items, rainfallMm) {
   return {
     total: items.length,
     recommended: items.filter((i) => i.risk_level === "매우위험" || i.risk_level === "위험").length,
     floodZones: items.filter((i) => i.risk_tags.includes("침수위험구역")).length,
-    rainfall: "—",
+    rainfall: rainfallMm != null ? rainfallMm.toFixed(1) : "—",
   };
 }
 
 export default function App() {
   const [tab, setTab] = useState("visit");
   const [items, setItems] = useState([]);
+  const [rainfall, setRainfall] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [lastUpdated, setLastUpdated] = useState(null);
 
   async function load() {
     setLoading(true);
-    setError(null);
     try {
-      const data = await fetchPriorityList(DEFAULT_SIGUNGU, 100);
-      setItems(data.items ?? []);
+      const [listData, rainData] = await Promise.all([
+        fetchPriorityList(DEFAULT_SIGUNGU, 100),
+        fetchRainScore(37.4812, 126.9290),
+      ]);
+      setItems(listData.items ?? []);
+      setRainfall(rainData.precipitation_6h_mm ?? null);
       setLastUpdated(new Date());
-    } catch {
-      setError("데이터를 불러오지 못했습니다. 서버 연결을 확인해 주세요.");
     } finally {
       setLoading(false);
     }
@@ -49,7 +50,7 @@ export default function App() {
     setItems((prev) => prev.filter((i) => i.household_id !== householdId));
   }
 
-  const stats = computeStats(items);
+  const stats = computeStats(items, rainfall);
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -96,10 +97,6 @@ export default function App() {
       </header>
 
       <main className="mx-auto w-full max-w-screen-xl flex-1 space-y-6 px-6 py-6">
-        {error && (
-          <div className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
-        )}
-
         {tab === "visit" && (
           <>
             <SummaryCards stats={stats} loading={loading} />
