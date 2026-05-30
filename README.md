@@ -10,6 +10,8 @@
 
 > 집중호우 전, **한정된 행정력을 가장 위험한 가구에 먼저** 배분하는 AI 기반 방문 우선순위 추천 시스템
 
+### 🌐 [라이브 데모 보기 →](https://viola-ai-blond.vercel.app)
+
 </div>
 
 ---
@@ -57,7 +59,7 @@ Viola AI는 공공데이터 6종을 결합해 **가구 단위 위험지수**를 
 ## 🏗️ 시스템 구조
 
 ```
-공공데이터 수집 (Airflow)
+공공데이터 수집 (기상청 API, 행안부 침수흔적도)
         ↓
 공간 데이터 결합·정규화 (PostGIS)
         ↓
@@ -66,7 +68,7 @@ AI 위험점수 산출 (Python)
      ┌──────────────┐
      ↓              ↓
   시민 앱         지자체 웹 대시보드
- (React Native)      (React)
+ (React Native)      (React + 카카오맵)
   침수위험 지도       방문 우선순위 리스트
   귀갓길 우회 안내    빗물받이 점검 추천
   대피소 안내        방문 완료 처리
@@ -79,70 +81,72 @@ AI 위험점수 산출 (Python)
 ```
 viola-ai/
 ├── pipeline/               # 공공데이터 수집·처리
-│   ├── fetch_weather.py    # 기상청 API 수집
+│   ├── risk_score.py       # 위험지수 산출 모델
+│   ├── fetch_weather.py    # 기상청 단기/초단기예보 API
 │   ├── fetch_flood.py      # 침수흔적도 파싱
-│   ├── fetch_welfare.py    # 복지 데이터 처리
-│   └── risk_score.py       # 위험지수 산출 모델
+│   ├── .env.example        # 환경변수 템플릿
+│   └── requirements.txt
 ├── backend/                # FastAPI 서버
-│   ├── main.py
-│   ├── routers/
-│   │   ├── risk_map.py     # 위험지도 API
-│   │   ├── visit_list.py   # 방문 우선순위 API
-│   │   ├── route.py        # 귀갓길 우회 경로 API
-│   │   └── drain.py        # 빗물받이 점검 API
-│   └── models/
-├── web/                    # 지자체 담당자용 대시보드 (React)
-├── app/                    # 시민용 앱 (React Native)
-└── docs/                   # 설계 문서
+│   ├── main.py             # API 엔드포인트 7개
+│   ├── models.py           # 반지하 가구 ORM + 스키마
+│   ├── drain_models.py     # 빗물받이 ORM + 위험점수
+│   ├── database.py         # PostgreSQL + PostGIS 연결
+│   └── requirements.txt
+├── web/                    # 지자체 담당자용 대시보드 (React + Tailwind)
+│   ├── src/
+│   │   ├── components/     # SummaryCards, PriorityList, RiskMap, DrainDashboard
+│   │   └── api/            # viola.js (API 클라이언트)
+│   └── package.json
+└── app/                    # 시민용 앱 (React Native + Expo)
+    ├── src/screens/        # FloodMap, RouteGuide, PriorityList
+    └── package.json
 ```
 
 ---
 
 ## 🚀 시작하기
 
-### 요구사항
-- Python 3.11+
-- PostgreSQL 15+ (PostGIS 확장 포함)
-- Node.js 20+
+### 웹 대시보드 (데모)
 
-### 설치
+**[https://viola-ai-blond.vercel.app](https://viola-ai-blond.vercel.app)** 에서 바로 확인 가능합니다.
+
+### 로컬 실행
 
 ```bash
 git clone https://github.com/kyum123/viola-ai.git
 cd viola-ai
 
-# 파이프라인 의존성 설치
+# 웹 대시보드
+cd web
+npm install
+cp .env.example .env   # 카카오맵 키 입력
+npm run dev            # http://localhost:5173
+
+# 파이프라인
 cd pipeline
 pip install -r requirements.txt
-
-# 환경변수 설정
-cp .env.example .env
-# .env에 기상청 API 키, DB 접속 정보 입력
-
-# 위험점수 계산 실행
+cp .env.example .env   # 기상청 API 키 입력
 python risk_score.py
-```
 
-### 백엔드 실행
-
-```bash
+# 백엔드
 cd backend
 pip install -r requirements.txt
-uvicorn main:app --reload
+uvicorn main:app --reload  # http://localhost:8000/docs
 ```
-
-API 문서: `http://localhost:8000/docs`
 
 ---
 
 ## 🗺️ 로드맵
 
 - [x] 서비스 기획 및 데이터 설계
-- [x] 위험지수 산출 모델 설계
-- [ ] 공공데이터 수집 파이프라인 구축
-- [ ] FastAPI 백엔드 MVP
-- [ ] 지자체 웹 대시보드
-- [ ] 시민용 앱 (React Native)
+- [x] 위험지수 산출 모델 (`pipeline/risk_score.py`)
+- [x] 기상청 API 수집 모듈 (`pipeline/fetch_weather.py`)
+- [x] 침수흔적도 파싱 모듈 (`pipeline/fetch_flood.py`)
+- [x] FastAPI 백엔드 MVP (`backend/main.py`)
+- [x] 지자체 웹 대시보드 — [데모](https://viola-ai-blond.vercel.app)
+- [x] 빗물받이 우선점검 대시보드
+- [x] 시민용 앱 UI 설계 (React Native)
+- [ ] 실제 DB 연동 및 공공데이터 투입
 - [ ] 서울시 관악구 파일럿 적용
 - [ ] 전국 지자체 확장
 
