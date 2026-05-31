@@ -11,10 +11,11 @@ const LEVEL_COLOR = {
 const SHELTERS = ["관악구청 임시대피소", "봉천동 주민센터"];
 
 // ── 폰 프레임 ──────────────────────────────────────────────────────────────
-function PhoneFrame({ title, children }) {
+function PhoneFrame({ label, subtitle, children }) {
   return (
     <div className="flex flex-col items-center">
-      <p className="mb-3 text-sm font-semibold text-gray-600">{title}</p>
+      <p className="mb-1 text-sm font-semibold text-gray-700">{label}</p>
+      <p className="mb-3 text-xs text-gray-400">{subtitle}</p>
       <div className="relative w-[260px] rounded-[36px] border-[6px] border-gray-800 bg-gray-800 shadow-2xl">
         {/* 상단 노치 */}
         <div className="absolute left-1/2 top-2 h-4 w-20 -translate-x-1/2 rounded-full bg-gray-900" />
@@ -49,8 +50,8 @@ function FloodMapScreen() {
         {/* 마커들 */}
         {items.map((item) => {
           const c = LEVEL_COLOR[item.risk_level];
-          const x = 20 + ((item.lng - 126.90) / 0.07) * 200;
-          const y = 10 + ((37.50 - item.lat) / 0.04) * 200;
+          const x = Math.min(230, Math.max(10, 20 + ((item.lng - 126.90) / 0.07) * 200));
+          const y = Math.min(240, Math.max(10, 10 + ((37.50 - item.lat) / 0.04) * 200));
           return (
             <button key={item.household_id}
               onClick={() => setSelected(selected?.household_id === item.household_id ? null : item)}
@@ -246,7 +247,7 @@ export default function AppPreview() {
       <div className="hidden lg:flex items-start justify-center gap-8">
         {SCREENS.map(({ key, label, subtitle, component: Screen }) => (
           <div key={key}>
-            <PhoneFrame title={`${label}\n(${subtitle})`}>
+            <PhoneFrame label={label} subtitle={subtitle}>
               <Screen />
             </PhoneFrame>
           </div>
@@ -256,7 +257,7 @@ export default function AppPreview() {
       {/* 모바일에서는 선택된 화면만 */}
       <div className="flex justify-center lg:hidden">
         {SCREENS.filter((s) => s.key === active).map(({ key, label, subtitle, component: Screen }) => (
-          <PhoneFrame key={key} title={`${label} (${subtitle})`}>
+          <PhoneFrame key={key} label={label} subtitle={subtitle}>
             <Screen />
           </PhoneFrame>
         ))}

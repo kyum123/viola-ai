@@ -17,6 +17,13 @@ function markerSvg(color) {
 function loadKakaoSdk(appKey) {
   return new Promise((resolve, reject) => {
     if (window.kakao?.maps) { resolve(); return; }
+    // 이미 script 태그가 추가된 경우 (StrictMode 이중 마운트 방어)
+    if (document.querySelector('script[src*="dapi.kakao.com"]')) {
+      const timer = setInterval(() => {
+        if (window.kakao?.maps) { clearInterval(timer); resolve(); }
+      }, 100);
+      return;
+    }
     const script = document.createElement("script");
     script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${appKey}&libraries=services&autoload=false`;
     script.onload = () => window.kakao.maps.load(resolve);
