@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { fetchPriorityList, fetchRainScore } from "./api/viola";
+import { fetchPriorityList, fetchRainScore, fetchShelterList } from "./api/viola";
 import AppPreview from "./components/AppPreview";
 import DrainDashboard from "./components/DrainDashboard";
 import InfoPanel from "./components/InfoPanel";
@@ -15,31 +15,37 @@ const TABS = [
   { key: "app", label: "📱 앱 미리보기" },
 ];
 
-function computeStats(items, rainfallMm) {
+function computeStats(items, rainfallMm, riverLevel) {
   return {
     total: items.length,
     recommended: items.filter((i) => i.risk_level === "매우위험" || i.risk_level === "위험").length,
     floodZones: items.filter((i) => i.risk_tags.includes("침수위험구역")).length,
     rainfall: rainfallMm != null ? rainfallMm.toFixed(1) : "—",
+    riverLevel: riverLevel != null ? Math.round(riverLevel * 100) : "—",
   };
 }
 
 export default function App() {
   const [tab, setTab] = useState("visit");
   const [items, setItems] = useState([]);
+  const [shelters, setShelters] = useState([]);
   const [rainfall, setRainfall] = useState(null);
+  const [riverLevel, setRiverLevel] = useState(null);
   const [loading, setLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState(null);
 
   async function load() {
     setLoading(true);
     try {
-      const [listData, rainData] = await Promise.all([
+      const [listData, rainData, shelterData] = await Promise.all([
         fetchPriorityList(DEFAULT_SIGUNGU, 100),
         fetchRainScore(37.4812, 126.9290),
+        fetchShelterList(DEFAULT_SIGUNGU),
       ]);
       setItems(listData.items ?? []);
       setRainfall(rainData.precipitation_6h_mm ?? null);
+      setRiverLevel(rainData.river_level_score ?? null);
+      setShelters(shelterData.items ?? []);
       setLastUpdated(new Date());
     } finally {
       setLoading(false);
@@ -52,7 +58,7 @@ export default function App() {
     setItems((prev) => prev.filter((i) => i.household_id !== householdId));
   }
 
-  const stats = computeStats(items, rainfall);
+  const stats = computeStats(items, rainfall, riverLevel);
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -108,7 +114,7 @@ export default function App() {
                 <div className="rounded-xl bg-white p-4 shadow-sm">
                   <h2 className="mb-3 font-semibold text-gray-700">침수 위험 지도</h2>
                   <div className="h-[460px]">
-                    <RiskMap items={items} />
+                    <RiskMap items={items} shelters={shelters} />
                   </div>
                 </div>
               </div>

@@ -1,5 +1,5 @@
 import axios from "axios";
-import { MOCK_DRAIN_PRIORITY, MOCK_PRIORITY_LIST, MOCK_RAIN_SCORE } from "./mockData";
+import { MOCK_DRAIN_PRIORITY, MOCK_PRIORITY_LIST, MOCK_RAIN_SCORE, MOCK_SHELTER_LIST } from "./mockData";
 
 // true → mock 데이터 (백엔드 없이 데모 가능)
 // false → 실제 FastAPI 백엔드 호출
@@ -36,3 +36,8 @@ export const completeDrainInspect = (drainId, inspector = null, result = null, n
   USE_MOCK
     ? Promise.resolve({ drain_id: drainId, message: "점검 완료가 기록되었습니다." })
     : api.post("/drain-inspect", { drain_id: drainId, inspector, result, note }).then((r) => r.data);
+
+export const fetchShelterList = (sigunguCode) =>
+  USE_MOCK
+    ? Promise.resolve(MOCK_SHELTER_LIST)
+    : api.get("/shelters", { params: { sigungu_code: sigunguCode } }).then((r) => r.data);

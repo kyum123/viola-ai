@@ -27,11 +27,18 @@ const CARDS = [
     color: "border-sky-500",
     icon: "🌧",
   },
+  {
+    key: "riverLevel",
+    label: "하천 수위 위험",
+    unit: "점",
+    color: "border-teal-500",
+    icon: "🌊",
+  },
 ];
 
 export default function SummaryCards({ stats, loading }) {
   return (
-    <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+    <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-5">
       {CARDS.map(({ key, label, unit, color, icon }) => (
         <div
           key={key}

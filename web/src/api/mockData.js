@@ -178,4 +178,16 @@ export const MOCK_RAIN_SCORE = {
   precipitation_6h_mm: 18.5,
   heavy_rain_alert: false,
   rain_score: 0.60,
+  river_level_score: 0.35,
+  river_station: "안양천(신림교)",
+};
+
+// 민방위 대피시설 현황 (행정안전부)
+export const MOCK_SHELTER_LIST = {
+  items: [
+    { id: "SH-11620-001", name: "신림동 주민센터", address: "서울 관악구 신림동 533-1", lat: 37.4847, lng: 126.9295, capacity: 300 },
+    { id: "SH-11620-002", name: "봉천동 주민센터", address: "서울 관악구 봉천동 852-5", lat: 37.4820, lng: 126.9490, capacity: 400 },
+    { id: "SH-11620-003", name: "청룡초등학교", address: "서울 관악구 청룡동 78-1", lat: 37.4870, lng: 126.9455, capacity: 800 },
+    { id: "SH-11560-001", name: "대림2동 주민센터", address: "서울 영등포구 대림동 913-1", lat: 37.4930, lng: 126.8970, capacity: 250 },
+  ],
 };
