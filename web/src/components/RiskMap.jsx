@@ -80,6 +80,8 @@ export default function RiskMap({ items, shelters, center }) {
   const markersRef = useRef([]);
   const shelterMarkersRef = useRef([]);
   const wmsImgRef = useRef(null);
+  const infowindowRef = useRef(null);
+  const openMarkerRef = useRef(null);
   const [ready, setReady] = useState(false);
   const [error, setError] = useState(false);
   const [wmsLayer, setWmsLayer] = useState("A2SM_FLOODDMG");
@@ -101,6 +103,13 @@ export default function RiskMap({ items, shelters, center }) {
     mapRef.current = new window.kakao.maps.Map(containerRef.current, {
       center: new window.kakao.maps.LatLng(defaultCenter.lat, defaultCenter.lng),
       level: 5,
+    });
+    // 공유 InfoWindow — removable: true 로 우상단 X 버튼 제공
+    infowindowRef.current = new window.kakao.maps.InfoWindow({ zIndex: 1, removable: true });
+    // 맵 빈 곳 클릭 시 InfoWindow 닫기
+    window.kakao.maps.event.addListener(mapRef.current, "click", () => {
+      infowindowRef.current?.close();
+      openMarkerRef.current = null;
     });
   }, [ready]);
 
@@ -151,9 +160,6 @@ export default function RiskMap({ items, shelters, center }) {
     markersRef.current.forEach((m) => m.setMap(null));
     markersRef.current = [];
 
-    const infowindow = new window.kakao.maps.InfoWindow({ zIndex: 1 });
-    let openMarker = null;
-
     items.forEach((item) => {
       const color = LEVEL_COLOR[item.risk_level] ?? "#6b7280";
       const position = new window.kakao.maps.LatLng(item.lat, item.lng);
@@ -179,13 +185,13 @@ export default function RiskMap({ items, shelters, center }) {
         </div>`;
 
       window.kakao.maps.event.addListener(marker, "click", () => {
-        if (openMarker === marker) {
-          infowindow.close();
-          openMarker = null;
+        if (openMarkerRef.current === marker) {
+          infowindowRef.current.close();
+          openMarkerRef.current = null;
         } else {
-          infowindow.setContent(content);
-          infowindow.open(mapRef.current, marker);
-          openMarker = marker;
+          infowindowRef.current.setContent(content);
+          infowindowRef.current.open(mapRef.current, marker);
+          openMarkerRef.current = marker;
         }
       });
       markersRef.current.push(marker);
@@ -199,9 +205,6 @@ export default function RiskMap({ items, shelters, center }) {
     shelterMarkersRef.current = [];
 
     if (!shelterVisible || !shelters?.length) return;
-
-    const infowindow = new window.kakao.maps.InfoWindow({ zIndex: 1 });
-    let openMarker = null;
 
     shelters.forEach((shelter) => {
       const position = new window.kakao.maps.LatLng(shelter.lat, shelter.lng);
@@ -223,13 +226,13 @@ export default function RiskMap({ items, shelters, center }) {
         </div>`;
 
       window.kakao.maps.event.addListener(marker, "click", () => {
-        if (openMarker === marker) {
-          infowindow.close();
-          openMarker = null;
+        if (openMarkerRef.current === marker) {
+          infowindowRef.current.close();
+          openMarkerRef.current = null;
         } else {
-          infowindow.setContent(content);
-          infowindow.open(mapRef.current, marker);
-          openMarker = marker;
+          infowindowRef.current.setContent(content);
+          infowindowRef.current.open(mapRef.current, marker);
+          openMarkerRef.current = marker;
         }
       });
       shelterMarkersRef.current.push(marker);
