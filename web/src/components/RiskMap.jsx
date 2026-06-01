@@ -152,6 +152,7 @@ export default function RiskMap({ items, shelters, center }) {
     markersRef.current = [];
 
     const infowindow = new window.kakao.maps.InfoWindow({ zIndex: 1 });
+    let openMarker = null;
 
     items.forEach((item) => {
       const color = LEVEL_COLOR[item.risk_level] ?? "#6b7280";
@@ -178,8 +179,14 @@ export default function RiskMap({ items, shelters, center }) {
         </div>`;
 
       window.kakao.maps.event.addListener(marker, "click", () => {
-        infowindow.setContent(content);
-        infowindow.open(mapRef.current, marker);
+        if (openMarker === marker) {
+          infowindow.close();
+          openMarker = null;
+        } else {
+          infowindow.setContent(content);
+          infowindow.open(mapRef.current, marker);
+          openMarker = marker;
+        }
       });
       markersRef.current.push(marker);
     });
@@ -194,6 +201,7 @@ export default function RiskMap({ items, shelters, center }) {
     if (!shelterVisible || !shelters?.length) return;
 
     const infowindow = new window.kakao.maps.InfoWindow({ zIndex: 1 });
+    let openMarker = null;
 
     shelters.forEach((shelter) => {
       const position = new window.kakao.maps.LatLng(shelter.lat, shelter.lng);
@@ -215,8 +223,14 @@ export default function RiskMap({ items, shelters, center }) {
         </div>`;
 
       window.kakao.maps.event.addListener(marker, "click", () => {
-        infowindow.setContent(content);
-        infowindow.open(mapRef.current, marker);
+        if (openMarker === marker) {
+          infowindow.close();
+          openMarker = null;
+        } else {
+          infowindow.setContent(content);
+          infowindow.open(mapRef.current, marker);
+          openMarker = marker;
+        }
       });
       shelterMarkersRef.current.push(marker);
     });
