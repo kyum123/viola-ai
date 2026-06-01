@@ -12,24 +12,29 @@ const WMS_BASE = "https://safemap.go.kr/wmservice/safemap";
 const WMS_LAYER = "A2SM_FLOODDMG"; // 침수흔적도
 
 function buildWmsUrl(map) {
-  const bounds = map.getBounds();
-  const sw = bounds.getSouthWest();
-  const ne = bounds.getNorthEast();
-  const size = map.getSize();
-  const params = new URLSearchParams({
-    SERVICE: "WMS",
-    VERSION: "1.1.1",
-    REQUEST: "GetMap",
-    LAYERS: WMS_LAYER,
-    SRS: "EPSG:4326",
-    BBOX: `${sw.getLng()},${sw.getLat()},${ne.getLng()},${ne.getLat()}`,
-    WIDTH: size.width,
-    HEIGHT: size.height,
-    FORMAT: "image/png",
-    TRANSPARENT: "true",
-    STYLES: "",
-  });
-  return `${WMS_BASE}?${params}`;
+  try {
+    const bounds = map.getBounds();
+    if (!bounds) return null;
+    const sw = bounds.getSouthWest();
+    const ne = bounds.getNorthEast();
+    const size = map.getSize();
+    const params = new URLSearchParams({
+      SERVICE: "WMS",
+      VERSION: "1.1.1",
+      REQUEST: "GetMap",
+      LAYERS: WMS_LAYER,
+      SRS: "EPSG:4326",
+      BBOX: `${sw.getLng()},${sw.getLat()},${ne.getLng()},${ne.getLat()}`,
+      WIDTH: size.width,
+      HEIGHT: size.height,
+      FORMAT: "image/png",
+      TRANSPARENT: "true",
+      STYLES: "",
+    });
+    return `${WMS_BASE}?${params}`;
+  } catch {
+    return null;
+  }
 }
 
 function markerSvg(color) {
@@ -113,7 +118,9 @@ export default function RiskMap({ items, center }) {
 
     function update() {
       if (wmsVisible) {
-        img.src = buildWmsUrl(mapRef.current);
+        const url = buildWmsUrl(mapRef.current);
+        if (!url) return;
+        img.src = url;
         img.style.display = "";
       } else {
         img.style.display = "none";
